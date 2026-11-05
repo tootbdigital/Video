@@ -10,14 +10,14 @@ Status: PROPOSTA. Nomes e personalidades abaixo são sugestões a aprovar.
 - Roupa fixa: moletom azul-royal com zíper, camiseta branca com estampa de foguete, calça cargo preta, tênis azul com estrela branca e sola branca, mochila de couro marrom.
 - Personalidade: curioso, impulsivo, ri de si mesmo quando erra. Quer fazer vídeos legais, mas começa pelo fim (a edição) e esquece o começo (a ideia).
 - Papel: faz a pergunta e comete o erro típico do iniciante, que vira a micro-lição.
-- Voz/tom: animado, frases curtas. `[DECIDIR: voz gravada, sintética ou só legenda]`
+- Voz/tom: animado, frases curtas. DECIDIDO: voz gravada (ver regras de gravação abaixo).
 
 ## Clip (robô-guia)
 - Visual: corpo branco brilhante e arredondado, rosto-visor preto com sorriso e olhos ciano luminosos, antena curta com bolinha azul, fones laterais azuis, círculo ciano no peito, mãos pretas, botas branco e azul.
 - Personalidade: paciente, bem-humorado, ensina fazendo perguntas em vez de dar a resposta pronta. Nunca ridiculariza o erro do Téo.
 - Papel: guia da viagem no tempo; abre cada era com "Missão do dia" e fecha com um resumo de uma frase.
 - Regra pedagógica: Clip nunca resolve sozinho. O Téo faz, erra, ajusta e acerta.
-- Voz/tom: calmo, levemente eletrônico, simpático. `[DECIDIR]`
+- Voz/tom: calmo, simpático, levemente eletrônico (efeito leve aplicado na edição sobre voz gravada). DECIDIDO: voz gravada.
 
 ## Regras visuais comuns
 - Estética 3D de animação, brilhante, formas arredondadas, iluminação cinematográfica suave com luz de contorno quente no Téo e azul-ciano no Clip.
@@ -40,3 +40,10 @@ Para Shorts, gerar a versão `9:16` mantendo o restante idêntico.
 ## Ficha de referência (imagens)
 Gerar uma vez a ficha de cada personagem (frente, lateral, três quartos, pose neutra, expressões: alegre, surpreso, concentrado, errou) e salvar. Usar como referência em toda cena; travar seed se a ferramenta aceitar.
 Arquivos de referência: `[DECIDIR: caminho/nome]`. A imagem enviada na sessão serve de ponto de partida.
+
+## Regras de gravação de voz (decidido: voz gravada)
+- Uma voz fixa por personagem durante toda a série. Trocar de voz no meio quebra a identidade tanto quanto trocar o visual.
+- Recomendo voz adulta (ou adulto interpretando o Téo). Se uma criança gravar, é preciso consentimento do responsável e a criança não deve ser identificada (sem nome real, sem local, sem escola). A voz de criança num canal público é dado pessoal; decida isso conscientemente.
+- Gravar em ambiente silencioso, microfone a 15 a 20 cm, arquivos separados por fala (`ep01_cena05_teo.wav`), 3 takes de cada, com 1 segundo de silêncio antes e depois.
+- Gravar as vozes ANTES de gerar os vídeos das cenas: a duração de cada fala define a duração de cada cena.
+- Sem música de terceiros. Trilha original ou de biblioteca com licença comercial anotada na descrição.
