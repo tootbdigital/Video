@@ -274,10 +274,15 @@ class TikTokUploader:
         :param scheduled_time: Objeto datetime com a data/hora para agendamento.
         :return: True se o upload foi realizado com sucesso, False caso contrário.
         """
-        self.start_browser()
-        success = self.upload_video(video_file, description=description, scheduled_time=scheduled_time)
-        self.close_browser()
-        return success
+        if not self.start_browser():
+            return False
+        try:
+            return self.upload_video(video_file, description=description, scheduled_time=scheduled_time)
+        except Exception as e:
+            print("Erro inesperado no upload do TikTok:", e)
+            return False
+        finally:
+            self.close_browser()
 
 # Exemplo de uso quando o módulo é executado diretamente:
 if __name__ == '__main__':

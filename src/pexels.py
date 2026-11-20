@@ -6,8 +6,8 @@ class PexelsAPI:
         self.headers = {"Authorization": api_key}
     
     def buscar_imagens(self, query, num=5):
-        url = f"{self.base_url}/search?query={query}&per_page={num}"
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(f"{self.base_url}/search", headers=self.headers,
+                                params={"query": query, "per_page": num}, timeout=30)
         if response.status_code == 200:
             return response.json()['photos']
         else:
@@ -15,8 +15,8 @@ class PexelsAPI:
             return []
 
     def buscar_videos(self, query, num=5, orientation="portrait"):
-        url = f"{self.base_url}/videos/search?query={query}&per_page={num}&orientation={orientation}"
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(f"{self.base_url}/videos/search", headers=self.headers,
+                                params={"query": query, "per_page": num, "orientation": orientation}, timeout=30)
         if response.status_code == 200:
             videos = response.json()['videos']
             for video in videos:
@@ -30,7 +30,7 @@ class PexelsAPI:
 
     def baixar_arquivo(self, url, destino):
         try:
-            response = requests.get(url, stream=True)
+            response = requests.get(url, stream=True, timeout=60)
             if response.status_code == 200:
                 with open(destino, "wb") as f:
                     for chunk in response.iter_content(1024):

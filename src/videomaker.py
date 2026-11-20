@@ -5,6 +5,7 @@ from moviepy.editor import *
 import moviepy.config as mpy_config
 from moviepy.audio.fx import all as afx
 from dotenv import load_dotenv
+from src.roteiro import parse_narracoes
 
 load_dotenv()
 
@@ -78,31 +79,7 @@ class VideoMaker:
         return img
 
     def carregar_roteiro(self, script_path="scripts/roteiro.txt"):
-        narracoes = {}
-
-        try:
-            with open(script_path, "r", encoding="utf-8") as file:
-                linhas = file.readlines()
-
-            narracao_id = 0
-
-            for linha in linhas:
-                linha = linha.strip()
-
-                if linha.startswith("NARRACAO:"):
-                    continue  
-
-                if linha and linha[0].isdigit() and "." in linha:
-                    texto_completo = linha.split(". ", 1)[1]
-                    narracao_id += 1
-                    partes = texto_completo.split(",")
-
-                    narracoes[narracao_id] = [parte.strip() for parte in partes if parte.strip()]
-
-            return narracoes
-
-        except Exception as e:
-            return {}
+        return parse_narracoes(script_path)
 
     def criar_video(self, download_dir, music=None, output_file="final_video.mp4", tempo_total_desejado=80, tempo_maximo_por_video=10):
         clips = []
@@ -139,7 +116,7 @@ class VideoMaker:
                 tempo_acumulado += duracao_video
 
         if not clips:
-            return
+            raise RuntimeError(f"Nenhum clipe de vídeo encontrado em '{download_dir}'")
 
         clips_com_transicoes = []
         duration_transicao = 0.3
@@ -153,6 +130,8 @@ class VideoMaker:
         final_clip = concatenate_videoclips(clips_com_transicoes, method="compose")
 
         if music is not None:
+            if not os.path.exists(music):
+                raise FileNotFoundError(f"Música não encontrada: {music}")
             audio_clip = AudioFileClip(music)
 
             if audio_clip.duration < final_clip.duration:
@@ -174,11 +153,11 @@ class VideoMaker:
     def adicionar_texto_e_audio(self, video_final_path, output_file="final_video_com_audio.mp4", script_file="scripts/roteiro.txt",
                                 volume_narracao=1.5, volume_musica=0.2):
         if not os.path.exists(video_final_path):
-            return  
+            raise FileNotFoundError(f"Vídeo base não encontrado: {video_final_path}")
 
         video_clip = VideoFileClip(video_final_path)
         screen_width, screen_height = video_clip.size
-        audio_original = video_clip.audio.fx(afx.volumex, volume_musica)
+        audio_original = video_clip.audio.fx(afx.volumex, volume_musica) if video_clip.audio else None
         narracoes = self.carregar_roteiro(script_file)
         print("=== Adicionando texto e áudio ao vídeo ===")
         print(narracoes)
@@ -210,7 +189,13 @@ class VideoMaker:
                     print(f"Áudio não encontrado para narração {narracao_id}, parte {parte_id}")
                 parte_id += 1
 
-        texto_final = CompositeVideoClip([video_clip] + clipes_texto).set_audio(CompositeAudioClip([audio_original, CompositeAudioClip(clipes_audio)]))
+        if not clipes_audio:
+            raise RuntimeError("Nenhum áudio de narração encontrado; vídeo final não gerado")
+        faixas = [CompositeAudioClip(clipes_audio)]
+        if audio_original is not None:
+            faixas.insert(0, audio_original)
+        texto_final = CompositeVideoClip([video_clip] + clipes_texto).set_audio(CompositeAudioClip(faixas))
+        os.makedirs("output", exist_ok=True)
         texto_final.write_videofile(os.path.join("output", output_file), fps=24)
 
 if __name__ == "__main__":

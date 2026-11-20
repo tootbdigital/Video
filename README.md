@@ -107,3 +107,22 @@ A seguir, um exemplo de script (sample) com o conteúdo a ser processado:
   O projeto está dividido em módulos (download, conversão de voz, criação de vídeos e upload), facilitando a manutenção e a reutilização do código.
 
 Basta seguir as instruções acima para configurar e rodar o projeto. Se precisar de ajustes ou novas funcionalidades, sinta-se à vontade para modificar os scripts conforme necessário.
+
+## Formato do roteiro
+
+Coloque vários temas em `scripts/roteiro.txt`; cada bloco começa com `TEMA: `
+(veja `roteiro.exemplo.txt`). Campos obrigatórios por bloco: `SEARCH:` (busca
+no Pexels, de preferência em inglês) e `TÍTULO:`. `HASHTAGS:` é opcional.
+Narrações são linhas `N. texto`; o texto é dividido em vírgulas (exceto entre
+dígitos, como `1,5`) e cada parte vira um áudio.
+
+Variáveis opcionais no `.env`: `SCRIPT_PATH`, `MUSIC_PATH` (padrão
+`musics/musica.mp3`), `ENABLE_TIKTOK=0` para publicar só no YouTube.
+
+## Comportamento em caso de falha
+
+- Qualquer erro na geração (TTS, download, render) aborta só aquele roteiro,
+  que permanece em `scripts/`; os demais continuam. O processo sai com código 1.
+- O roteiro só vai para `script_backup/` se o upload no YouTube der certo.
+- Se o YouTube der certo e o TikTok falhar, o vídeo vai para `tiktok_pendente/`.
+- Testes: `python -m pytest tests`

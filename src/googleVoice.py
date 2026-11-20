@@ -1,6 +1,7 @@
 import os
 from google.cloud import texttospeech_v1 as texttospeech
 from dotenv import load_dotenv
+from src.roteiro import parse_narracoes
 from pydub import AudioSegment  # Importar a biblioteca pydub para calcular a duração do áudio
 
 # Carregar variáveis do .env
@@ -11,7 +12,7 @@ class GoogleVoice:
         # Pegar a API Key do arquivo .env
         self.API_KEY = os.getenv("GOOGLE_API_KEY")
         # Caminhos das pastas
-        self.SCRIPT_PATH = os.path.join("scripts", "roteiro.txt")  # Caminho do roteiro
+        self.SCRIPT_PATH = os.path.join(os.getenv("SCRIPT_PATH", "scripts"), "roteiro.txt")  # Caminho do roteiro
         self.OUTPUT_DIR = os.path.join("output", "audio")          # Pasta onde os áudios serão salvos
         os.makedirs(self.OUTPUT_DIR, exist_ok=True)
 
@@ -51,43 +52,30 @@ class GoogleVoice:
             return None
 
     def processar_roteiro(self, script_path=None):
+        """Gera um .wav por parte de narração e retorna a duração total (s).
+
+        Levanta exceção em qualquer falha (roteiro sem narração, TTS falhou):
+        nunca devolve 0 em silêncio, para o chamador não seguir adiante.
+        """
         if script_path is None:
             script_path = self.SCRIPT_PATH
 
-        try:
-            with open(script_path, "r", encoding="utf-8") as file:
-                linhas = file.readlines()
+        narracoes = parse_narracoes(script_path)
+        tempo_total = 0
 
-            narracao_id = 0  # Número da narração no roteiro
-            tempo_total = 0  # Variável para armazenar o tempo total de áudio
+        for narracao_id, partes in narracoes.items():
+            for parte_id, parte_texto in enumerate(partes, start=1):
+                arquivo_audio = os.path.join(self.OUTPUT_DIR, f"narracao_{narracao_id}_{parte_id}.wav")
+                arquivo_gerado = self.gerar_audio_google(parte_texto, nome_voz="pt-BR-Wavenet-A", arquivo_audio=arquivo_audio)
+                if not arquivo_gerado:
+                    raise RuntimeError(f"Falha no TTS (narração {narracao_id}, parte {parte_id}): {parte_texto!r}")
+                audio = AudioSegment.from_file(arquivo_gerado)
+                tempo_total += len(audio) / 1000
 
-            for linha in linhas:
-                if linha.startswith("NARRACAO:"):
-                    continue  
-
-                if linha.strip() and linha[0].isdigit() and "." in linha:
-                    texto_completo = linha.strip().split(". ", 1)[1]  
-                    narracao_id += 1
-                    partes = texto_completo.split(",")  # Divide a frase nas vírgulas
-                    
-                    # Gerar áudios para cada parte
-                    for parte_id, parte in enumerate(partes, start=1):
-                        parte_texto = parte.strip()
-                        arquivo_audio = os.path.join(self.OUTPUT_DIR, f"narracao_{narracao_id}_{parte_id}.wav")
-                        arquivo_gerado = self.gerar_audio_google(parte_texto, nome_voz="pt-BR-Wavenet-A", arquivo_audio=arquivo_audio)
-                        
-                        # Calcular a duração do áudio gerado e adicionar ao tempo total
-                        if arquivo_gerado:
-                            audio = AudioSegment.from_file(arquivo_gerado)
-                            duracao = len(audio) / 1000  # Converter milissegundos para segundos
-                            tempo_total += duracao
-
-            print(f"✅ Todos os áudios foram gerados! Tempo total: {tempo_total:.2f} segundos.")
-            return tempo_total  # Retornar o tempo total
-
-        except Exception as e:
-            print(f"❌ Erro ao processar o roteiro: {e}")
-            return 0  # Retornar 0 em caso de erro
+        if tempo_total <= 0:
+            raise RuntimeError("Duração total de áudio é zero")
+        print(f"✅ Todos os áudios foram gerados! Tempo total: {tempo_total:.2f} segundos.")
+        return tempo_total
 
     def testar_ambiente(self):
         # Verifica se a API Key está disponível
